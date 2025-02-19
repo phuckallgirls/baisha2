@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 require('dotenv').config();
+const { initDatabase } = require('./scripts/init-db');
 
 // 导入所有路由
 const indexRoutes = require('./application/api/routes/index');
@@ -89,8 +90,15 @@ app.use((err, req, res, next) => {
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+
+// 先初始化数据库，然后再启动服务器
+initDatabase().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}).catch(err => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
 });
 
 module.exports = app; 
